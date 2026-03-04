@@ -31,8 +31,16 @@ export function AppProvider({ children }) {
       .catch(() => {});
   }, []);
 
-  function t(key) {
-    return translations[key] || key;
+  function t(key, params = {}) {
+    let text = translations[key] || key;
+    
+    // Simple interpolation - replace {key} patterns with actual values
+    Object.keys(params).forEach(param => {
+      const regex = new RegExp(`\\{${param}\\}`, 'g');
+      text = text.replace(regex, params[param]);
+    });
+    
+    return text;
   }
 
   function setTheme(val) { setThemeState(val); }

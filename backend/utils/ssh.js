@@ -101,4 +101,51 @@ function hasSSHKey() {
   return candidates.some(f => fs.existsSync(f));
 }
 
-module.exports = { checkSSH, getPublicKey, hasSSHKey };
+function deleteSSHKey(deleteFromSystem = false) {
+  console.log('[SSH DELETE] Starting SSH key deletion, deleteFromSystem:', deleteFromSystem);
+  
+  try {
+    // If deleteFromSystem is true, delete actual key files
+    if (deleteFromSystem) {
+      const keyFiles = [
+        path.join(os.homedir(), '.ssh', 'id_ed25519'),
+        path.join(os.homedir(), '.ssh', 'id_ed25519.pub'),
+        path.join(os.homedir(), '.ssh', 'id_rsa'),
+        path.join(os.homedir(), '.ssh', 'id_rsa.pub'),
+        path.join(os.homedir(), '.ssh', 'id_ecdsa'),
+        path.join(os.homedir(), '.ssh', 'id_ecdsa.pub'),
+      ];
+      
+      keyFiles.forEach(file => {
+        if (fs.existsSync(file)) {
+          console.log('[SSH DELETE] Deleting file:', file);
+          fs.unlinkSync(file);
+        }
+      });
+      
+      // Remove GitHub from known_hosts
+      const knownHostsPath = path.join(os.homedir(), '.ssh', 'known_hosts');
+      if (fs.existsSync(knownHostsPath)) {
+        try {
+          const content = fs.readFileSync(knownHostsPath, 'utf-8');
+          const lines = content.split('\n');
+          const filteredLines = lines.filter(line => !line.includes('github.com'));
+          if (filteredLines.length < lines.length) {
+            console.log('[SSH DELETE] Removing github.com from known_hosts');
+            fs.writeFileSync(knownHostsPath, filteredLines.join('\n'));
+          }
+        } catch (err) {
+          console.error('[SSH DELETE] Error editing known_hosts:', err.message);
+        }
+      }
+    }
+    
+    console.log('[SSH DELETE] SSH key deletion completed');
+    return { success: true };
+  } catch (err) {
+    console.error('[SSH DELETE] Error deleting SSH key:', err);
+    return { success: false, error: err.message };
+  }
+}
+
+module.exports = { checkSSH, getPublicKey, hasSSHKey, deleteSSHKey };

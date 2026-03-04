@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { getConfig, setConfig } = require('../utils/config');
-const { checkSSH, getPublicKey, hasSSHKey } = require('../utils/ssh');
+const { checkSSH, getPublicKey, hasSSHKey, deleteSSHKey } = require('../utils/ssh');
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
@@ -86,6 +86,25 @@ router.post('/ssh/generate-key', (req, res) => {
     }
 
     res.json({ publicKey });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// SSH key'sini sil
+router.delete('/ssh/delete-key', (req, res) => {
+  try {
+    const { deleteFromSystem } = req.body;
+    const result = deleteSSHKey(deleteFromSystem || false);
+    
+    if (!result.success) {
+      return res.status(500).json({ error: result.error });
+    }
+
+    // Reset SSH status in config
+    setConfig({ sshStatus: { connected: false, username: null, lastChecked: new Date().toISOString() } });
+
+    res.json({ success: true, message: deleteFromSystem ? 'SSH key deleted from system' : 'SSH key removed from config' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

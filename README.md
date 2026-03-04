@@ -2,8 +2,6 @@
 
 A modern web-based dashboard for managing PM2 processes, GitHub repositories, and deployments with SSH key integration.
 
-<!-- IMAGE: Dashboard main view showing project list with status cards - path: docs/images/dashboard.png -->
-
 ![Dashboard](docs/images/dashboard.png)
 
 ## Features
@@ -38,7 +36,7 @@ sudo npm install -g pm2
 
 2. Clone the repository:
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/CanAydinCs/pm2-server
 cd pm2-server
 ```
 
@@ -63,10 +61,6 @@ pm2 save
 pm2 startup
 ```
 
-<!-- IMAGE: Ubuntu terminal showing setup process - path: docs/images/ubuntu-setup.png -->
-
-![Ubuntu Setup](docs/images/ubuntu-setup.png)
-
 ## SSH Key Setup
 
 ### Why SSH Keys?
@@ -85,13 +79,6 @@ SSH keys provide a secure way to authenticate with GitHub without entering your 
 6. Paste the key and click "Add SSH key"
 7. Return to the dashboard and click **Test Connection**
 
-<!-- IMAGE: SSH key generation modal in settings - path: docs/images/ssh-key-modal.png -->
-
-![SSH Key Modal](docs/images/ssh-key-modal.png)
-
-<!-- IMAGE: GitHub SSH keys page showing where to add the key - path: docs/images/github-ssh-keys.png -->
-
-![GitHub SSH Keys](docs/images/github-ssh-keys.png)
 
 #### Option 2: Manual Setup
 
@@ -136,8 +123,6 @@ chmod 644 ~/.ssh/id_ed25519.pub
 1. Navigate to **Projects** page
 2. Click **Add Project** button
 
-<!-- IMAGE: Add project dialog - path: docs/images/add-project.png -->
-
 ![Add Project](docs/images/add-project.png)
 
 3. Fill in the required fields:
@@ -156,8 +141,6 @@ Once a project is cloned and has an ecosystem file, you'll see process cards on 
 - **Reload**: Gracefully reload a process (zero-downtime restart)
 - **Delete**: Remove the process from PM2
 
-<!-- IMAGE: Process card showing all control buttons - path: docs/images/process-card.png -->
-
 ![Process Card](docs/images/process-card.png)
 
 ### Viewing Logs
@@ -165,8 +148,6 @@ Once a project is cloned and has an ecosystem file, you'll see process cards on 
 1. Go to **Logs** page
 2. Select a process from the dropdown
 3. View real-time logs with timestamps
-
-<!-- IMAGE: Logs page showing process output - path: docs/images/logs-page.png -->
 
 ![Logs Page](docs/images/logs-page.png)
 
@@ -187,8 +168,6 @@ Access settings via the **Settings** page:
 - **Repo Directory**: Default directory for cloning repositories
 - **Theme**: Switch between dark and light mode
 - **Language**: Choose between English and Turkish
-
-<!-- IMAGE: Settings page showing all configuration options - path: docs/images/settings-full.png -->
 
 ![Settings Full](docs/images/settings-full.png)
 
@@ -387,7 +366,7 @@ This project is licensed under the MIT License.
 
 For issues, questions, or contributions:
 
-- GitHub Issues: [Create an issue on GitHub](https://github.com/yourusername/pm2-server/issues)
+- GitHub Issues: [Create an issue on GitHub](https://github.com/CanAydinCs/pm2-server/issues)
 - Email: your.email@example.com
 
 ## Changelog

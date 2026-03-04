@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useApp } from '../context/AppContext';
-import { RefreshCw, Copy, Check, ExternalLink, Key } from 'lucide-react';
+import { RefreshCw, Copy, Check, ExternalLink, Key, Trash2 } from 'lucide-react';
 
 function Modal({ title, onClose, children }) {
   return (
@@ -37,6 +37,8 @@ export default function Settings() {
   const [checkResult, setCheckResult] = useState(null);
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteFromSystem, setDeleteFromSystem] = useState(false);
 
   useEffect(() => {
     axios.get('/pm2/master/api/settings', { withCredentials: true })
@@ -130,6 +132,22 @@ export default function Settings() {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  async function handleDeleteSSHKey() {
+    try {
+      await axios.delete('/pm2/master/api/settings/ssh/delete-key', {
+        data: { deleteFromSystem },
+        withCredentials: true
+      });
+      setHasKey(false);
+      setPublicKey('');
+      setCheckResult(null);
+      setShowDeleteModal(false);
+      setDeleteFromSystem(false);
+    } catch (err) {
+      alert(err.response?.data?.error || 'SSH key silinemedi');
+    }
+  }
+
   if (!config) return (
     <div className="flex items-center justify-center h-64" style={{ color: 'var(--muted)' }}>
       Yukleniyor...
@@ -204,6 +222,15 @@ export default function Settings() {
               <p className="text-xs font-mono mt-2" style={{ color: 'var(--muted)' }}>
                 {t('clone_cmd_example')}: git clone git@github.com:kullanici/repo.git
               </p>
+
+              {/* SSH Key Sil */}
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="text-xs px-3 py-1.5 rounded-lg border transition-colors hover:bg-white/5 mt-2"
+                style={{ borderColor: 'var(--border)', color: 'var(--danger)' }}
+                title={t('delete_ssh_key_btn')}>
+                <Trash2 size={13} className="mr-1" /> {t('delete_ssh_key_btn')}
+              </button>
             </div>
           )}
         </div>
@@ -312,6 +339,48 @@ export default function Settings() {
               style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>
               {t('close')}
             </button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Delete SSH Key Modal */}
+      {showDeleteModal && (
+        <Modal title={t('delete_ssh_key_title')} onClose={() => setShowDeleteModal(false)}>
+          <div className="flex flex-col gap-4">
+            <p className="text-sm" style={{ color: 'var(--muted)' }}>
+              {t('delete_ssh_key_confirm')}
+            </p>
+
+            <label className="flex items-start gap-2.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={deleteFromSystem}
+                onChange={(e) => setDeleteFromSystem(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded border"
+                style={{ accentColor: 'var(--accent)', borderColor: 'var(--border)' }}
+              />
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-medium">{t('delete_from_system')}</span>
+                <span className="text-xs" style={{ color: 'var(--muted)' }}>{t('delete_from_system_desc')}</span>
+              </div>
+            </label>
+
+            <div className="flex gap-2 mt-2">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 py-2 rounded-lg text-sm border transition-colors hover:bg-white/5"
+                style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}
+              >
+                {t('cancel')}
+              </button>
+              <button
+                onClick={handleDeleteSSHKey}
+                className="flex-1 py-2 rounded-lg text-sm font-medium transition-colors"
+                style={{ background: 'var(--danger)', color: '#fff' }}
+              >
+                {t('delete')}
+              </button>
+            </div>
           </div>
         </Modal>
       )}
