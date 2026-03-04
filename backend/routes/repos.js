@@ -60,58 +60,40 @@ router.post('/:name/deploy', async (req, res) => {
     return res.status(404).json({ error: 'Repo bulunamadı' });
   }
 
-  // Hemen 200 dön, ilerlemeyi WebSocket ile gönder
-  res.json({ success: true, message: 'Deploy başladı, WS üzerinden takip edin' });
+  // Hemen 200 dön, ilerlemeyi WebSocket üzerinden gönder
+  res.json({ success: true, message: 'Deploy started, follow via WS' });
 
   const step = (msg) => broadcast('deploy', { repo: req.params.name, message: msg });
 
   try {
-    step('📥 git pull yapılıyor...');
+    step('Git pull starting...');
     await pullRepo(repoPath);
-    step('✓ git pull tamamlandı');
+    step('Git pull completed');
 
     const ecosystemPath = findEcosystem(repoPath);
-    const apps = ecosystemPath ? parseEcosystem(ecosystemPath) : null;
 
-    // post-deploy komutlarını ecosystem'den al, yoksa varsayılanı kullan
+    if (!ecosystemPath) {
+      step('ERROR: Ecosystem file not found - cannot deploy');
+      return;
+    }
+
+    const apps = parseEcosystem(ecosystemPath);
     const postDeploy = apps?.[0]?.['post-deploy'] || null;
 
     if (postDeploy) {
-      step(`⚙️  post-deploy çalıştırılıyor...`);
+      step('Running post-deploy command...');
       execSync(postDeploy, { cwd: repoPath, stdio: 'pipe' });
-      step('✓ post-deploy tamamlandı');
-    } else {
-      // Varsayılan sıra
-      if (fs.existsSync(path.join(repoPath, 'composer.json'))) {
-        step('📦 composer install...');
-        execSync('composer install --no-interaction', { cwd: repoPath, stdio: 'pipe' });
-        step('✓ composer install tamamlandı');
-      }
-      if (fs.existsSync(path.join(repoPath, 'package.json'))) {
-        step('📦 npm install...');
-        execSync('npm install', { cwd: repoPath, stdio: 'pipe' });
-        step('📦 npm run build...');
-        execSync('npm run build', { cwd: repoPath, stdio: 'pipe' });
-        step('✓ npm build tamamlandı');
-      }
-      if (fs.existsSync(path.join(repoPath, 'artisan'))) {
-        step('🗄️  php artisan migrate...');
-        execSync('php artisan migrate --force', { cwd: repoPath, stdio: 'pipe' });
-        step('✓ migrate tamamlandı');
-      }
+      step('Post-deploy command completed');
     }
 
-    // pm2 reload
-    if (ecosystemPath) {
-      step(' pm2 reload...');
-      await pm2.connect();
-      await pm2.start(ecosystemPath);
-      step('pm2 reload tamamlandı');
-    }
+    step('PM2 reload starting...');
+    await pm2.connect();
+    await pm2.start(ecosystemPath);
+    step('PM2 reload completed');
 
-    step(' Deploy tamamlandı!');
+    step('Deploy completed');
   } catch (err) {
-    broadcast('deploy', { repo: req.params.name, message: ` Hata: ${err.message}` });
+    step(`ERROR: ${err.message}`);
   }
 });
 
