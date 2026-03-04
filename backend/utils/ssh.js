@@ -10,8 +10,8 @@ async function checkSSH() {
   try {
     let result;
     try {
-      console.log('[SSH CMD] Executing: ssh -T git@github.com');
-      result = execSync('ssh -T git@github.com', {
+      console.log('[SSH CMD] Executing: ssh -T -o StrictHostKeyChecking=no git@github.com');
+      result = execSync('ssh -T -o StrictHostKeyChecking=no git@github.com', {
         shell: true,
         stdio: ['pipe', 'pipe', 'pipe'],
         timeout: 10000,
