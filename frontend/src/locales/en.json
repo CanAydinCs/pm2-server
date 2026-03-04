@@ -93,5 +93,11 @@
   "ssh_config_info": "Use the host alias to clone repos with this account",
   "clone_example": "Clone example",
   "select_account": "Select Account",
-  "recheck_account": "Test Selected Account"
+  "recheck_account": "Test Selected Account",
+  "loading": "Loading...",
+  "leave_empty_to_continue": "Leave empty to continue",
+  "enter_password_to_continue": "Enter your password to continue",
+  "no_password_set": "No password set - just click Login",
+  "error_checking_status": "Error checking authentication status",
+  "login_failed": "Login failed"
 }

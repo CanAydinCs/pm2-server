@@ -93,5 +93,11 @@
   "ssh_config_info": "Bu hesabı kullanarak repo klonlamak için host takma adını kullanın",
   "clone_example": "Klonlama örneği",
   "select_account": "Hesap Seç",
-  "recheck_account": "Seçili Hesabı Test Et"
+  "recheck_account": "Seçili Hesabı Test Et",
+  "loading": "Yükleniyor...",
+  "leave_empty_to_continue": "Devam etmek için boş bırakın",
+  "enter_password_to_continue": "Devam etmek için şifrenizi girin",
+  "no_password_set": "Şifre ayarlanmadı - sadece Giriş'e tıklayın",
+  "error_checking_status": "Kimlik doğrulama durumu kontrol edilirken hata",
+  "login_failed": "Giriş başarısız"
 }

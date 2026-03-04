@@ -41,14 +41,24 @@ router.post('/password', authMiddleware, async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   const config = getConfig();
 
+  if (!newPassword || newPassword.trim().length === 0) {
+    return res.status(400).json({ error: 'Yeni şifre boş olamaz' });
+  }
+
   if (config.passwordHash) {
     const valid = await checkPassword(currentPassword, config.passwordHash);
     if (!valid) return res.status(401).json({ error: 'Mevcut şifre hatalı' });
   }
 
-  const hash = await hashPassword(newPassword);
-  setConfig({ passwordHash: hash });
-  res.json({ success: true });
+  try {
+    const hash = await hashPassword(newPassword);
+    setConfig({ passwordHash: hash });
+    console.log('[AUTH] Password set successfully');
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[AUTH] Error setting password:', err);
+    return res.status(500).json({ error: 'Şifre ayarlanırken hata oluştu' });
+  }
 });
 
 // Şifreyi kaldır (korumalı)
