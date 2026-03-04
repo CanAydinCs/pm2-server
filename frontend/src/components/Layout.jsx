@@ -12,18 +12,9 @@ export default function Layout() {
   useEffect(() => {
     async function checkAuth() {
       try {
-        const res = await fetch('/pm2/master/auth/status', { credentials: 'include' });
-        const data = await res.json();
-        
-        // If password is required, user must be authenticated
-        if (data.passwordRequired) {
-          // Check if user has valid token
-          const checkRes = await fetch('/pm2/master/api/settings', { credentials: 'include' });
-          setAuthenticated(checkRes.ok);
-        } else {
-          // No password required, user is authenticated
-          setAuthenticated(true);
-        }
+        // Always check if user has valid session by trying to access protected endpoint
+        const checkRes = await fetch('/pm2/master/api/settings', { credentials: 'include' });
+        setAuthenticated(checkRes.ok);
       } catch (err) {
         console.error('Auth check failed:', err);
         setAuthenticated(false);

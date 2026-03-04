@@ -31,9 +31,10 @@ router.post('/logout', (req, res) => {
 });
 
 // Şifre durumu (frontend şifre gerekip gerekmediğini öğrenir, hash dönmez)
+// Her zaman passwordRequired: true döner ki kullanıcı her zaman login sayfasını görsün
 router.get('/status', (req, res) => {
   const config = getConfig();
-  res.json({ passwordRequired: !!config.passwordHash });
+  res.json({ passwordRequired: true });
 });
 
 // Şifre ekle / değiştir (korumalı)
