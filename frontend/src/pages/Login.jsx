@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useApp } from '../context/AppContext';
+import { Moon, Sun } from 'lucide-react';
 
 export default function Login() {
-  const { t } = useApp();
+  const { t, theme, setTheme, lang, setLang } = useApp();
   const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -45,7 +46,20 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+    <div className="min-h-screen flex items-center justify-center relative" style={{ background: 'var(--bg)' }}>
+      <div className="absolute top-6 right-6 flex items-center gap-3">
+        <select value={lang} onChange={(e) => setLang(e.target.value)}
+          className="text-sm px-2 py-1 rounded-md border outline-none cursor-pointer"
+          style={{ background: 'var(--card)', borderColor: 'var(--border)', color: 'var(--fg)' }}>
+          <option value="tr">TR</option>
+          <option value="en">EN</option>
+        </select>
+        <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="p-2 rounded-md transition-colors hover:bg-white/5"
+          style={{ color: 'var(--muted)' }}>
+          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
+      </div>
       <form onSubmit={handleLogin}
         className="w-full max-w-sm p-8 rounded-2xl border shadow-xl"
         style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>

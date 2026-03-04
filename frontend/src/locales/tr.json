@@ -99,5 +99,8 @@
   "enter_password_to_continue": "Devam etmek için şifrenizi girin",
   "no_password_set": "Şifre ayarlanmadı - sadece Giriş'e tıklayın",
   "error_checking_status": "Kimlik doğrulama durumu kontrol edilirken hata",
-  "login_failed": "Giriş başarısız"
+  "login_failed": "Giriş başarısız",
+  "download_logs": "Logları İndir",
+  "confirm_clear_logs": "Log Ekranını Temizle",
+  "confirm_clear_logs_desc": "Bu işlem sadece log ekranını temizler. Sunucudaki gerçek log dosyaları silinmez."
 }

@@ -99,5 +99,8 @@
   "enter_password_to_continue": "Enter your password to continue",
   "no_password_set": "No password set - just click Login",
   "error_checking_status": "Error checking authentication status",
-  "login_failed": "Login failed"
+  "login_failed": "Login failed",
+  "download_logs": "Download Logs",
+  "confirm_clear_logs": "Clear Log Display",
+  "confirm_clear_logs_desc": "This will only clear the log display. Actual log files on the server will NOT be deleted."
 }

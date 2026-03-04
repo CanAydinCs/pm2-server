@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useApp } from '../context/AppContext';
-import { RefreshCw, Copy, Check, ExternalLink, Key, Trash2, LogOut } from 'lucide-react';
+import { RefreshCw, Copy, Check, ExternalLink, Key, Trash2, LogOut, Download } from 'lucide-react';
 
 function Modal({ title, onClose, children }) {
   return (
@@ -41,6 +41,11 @@ export default function Settings() {
   const [copied, setCopied] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteFromSystem, setDeleteFromSystem] = useState(false);
+  const [showDeletePasswordModal, setShowDeletePasswordModal] = useState(false);
+  
+  // Self-update state
+  const [updating, setUpdating] = useState(false);
+  const [updateLog, setUpdateLog] = useState([]);
 
   useEffect(() => {
     axios.get('/pm2/master/api/settings', { withCredentials: true })
@@ -48,6 +53,17 @@ export default function Settings() {
       .catch(console.error);
 
     fetchSSHKeyInfo();
+
+    // WebSocket listener for self-update logs
+    const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+    const ws = new WebSocket(`${protocol}://${location.host}/pm2/master/ws`);
+    ws.onmessage = (e) => {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'self-update') {
+        setUpdateLog((prev) => [...prev, msg.data]);
+      }
+    };
+    return () => ws.close();
   }, []);
 
   async function fetchSSHKeyInfo() {
@@ -90,12 +106,17 @@ export default function Settings() {
   }
 
   async function removePassword() {
-    if (!window.confirm(t('confirm_delete'))) return;
+    setShowDeletePasswordModal(true);
+  }
+
+  async function confirmRemovePassword() {
     try {
       await axios.delete('/pm2/master/auth/password',
         { data: { currentPassword: passwordForm.currentPassword }, withCredentials: true }
       );
       setPasswordMsg('Sifre kaldirildi');
+      setShowDeletePasswordModal(false);
+      setPasswordForm({ currentPassword: '', newPassword: '' });
     } catch (err) {
       setPasswordMsg(err.response?.data?.error || 'Hata olustu');
     }
@@ -156,6 +177,18 @@ export default function Settings() {
       navigate('/login');
     } catch (err) {
       console.error('Logout failed:', err);
+    }
+  }
+
+  async function handleSelfUpdate() {
+    setUpdating(true);
+    setUpdateLog([]);
+    try {
+      await axios.post('/pm2/master/api/settings/self-update', {}, { withCredentials: true });
+      // Success message will be shown in logs
+    } catch (err) {
+      setUpdateLog(prev => [...prev, { message: `Error: ${err.response?.data?.error || err.message}`, error: true }]);
+      setUpdating(false);
     }
   }
 
@@ -332,6 +365,50 @@ export default function Settings() {
         </button>
       </section>
 
+      {/* Self-Update */}
+      <section className="rounded-xl border p-5"
+        style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-semibold text-sm">Update Server</h2>
+          <Download size={16} style={{ color: 'var(--muted)' }} />
+        </div>
+        
+        <div className="flex flex-col gap-3">
+          <p className="text-sm" style={{ color: 'var(--muted)' }}>
+            Pull latest changes, build frontend, and restart server.
+          </p>
+          
+          <button
+            onClick={handleSelfUpdate}
+            disabled={updating}
+            className="flex items-center justify-center gap-1.5 text-xs px-4 py-2.5 rounded-lg transition-colors"
+            style={{ background: 'var(--accent)', color: '#fff', opacity: updating ? 0.6 : 1 }}
+          >
+            {updating ? <RefreshCw size={13} className="animate-spin" /> : <Download size={13} />}
+            {updating ? 'Updating...' : 'Update & Restart'}
+          </button>
+
+          {/* Update logs */}
+          {updateLog.length > 0 && (
+            <div className="rounded-lg p-3 text-xs font-mono space-y-1 max-h-48 overflow-y-auto"
+              style={{ background: 'var(--bg)', color: 'var(--fg)', border: '1px solid var(--border)' }}>
+              {updateLog.map((log, i) => (
+                <div key={i} style={{ color: log.error ? 'var(--danger)' : 'var(--muted)' }}>
+                  {log.message}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {updateLog.length > 0 && updateLog[updateLog.length - 1].message.includes('restart') && (
+            <div className="text-xs px-3 py-2 rounded-lg"
+              style={{ background: 'var(--success)' + '15', color: 'var(--success)', border: '1px solid var(--success)30' }}>
+              Server is restarting. Please refresh the page in a few moments.
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* Public Key Modal */}
       {showKeyModal && (
         <Modal title={t('add_key_modal_title')} onClose={() => setShowKeyModal(false)}>
@@ -399,6 +476,34 @@ export default function Settings() {
               </button>
               <button
                 onClick={handleDeleteSSHKey}
+                className="flex-1 py-2 rounded-lg text-sm font-medium transition-colors"
+                style={{ background: 'var(--danger)', color: '#fff' }}
+              >
+                {t('delete')}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Delete Password Modal */}
+      {showDeletePasswordModal && (
+        <Modal title={t('confirm_delete')} onClose={() => setShowDeletePasswordModal(false)}>
+          <div className="flex flex-col gap-4">
+            <p className="text-sm" style={{ color: 'var(--muted)' }}>
+              {t('confirm_delete')}
+            </p>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowDeletePasswordModal(false)}
+                className="flex-1 py-2 rounded-lg text-sm border transition-colors hover:bg-white/5"
+                style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}
+              >
+                {t('cancel')}
+              </button>
+              <button
+                onClick={confirmRemovePassword}
                 className="flex-1 py-2 rounded-lg text-sm font-medium transition-colors"
                 style={{ background: 'var(--danger)', color: '#fff' }}
               >

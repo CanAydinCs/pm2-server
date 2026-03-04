@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { ArrowLeft, Trash2 } from 'lucide-react';
+import { ArrowLeft, Download, Trash2 } from 'lucide-react';
 
 export default function Logs() {
   const { name } = useParams();
@@ -10,6 +10,7 @@ export default function Logs() {
   const [lines, setLines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showClearModal, setShowClearModal] = useState(false);
   const bottomRef = useRef(null);
 
   // Fetch initial logs
@@ -131,70 +132,26 @@ export default function Logs() {
 
   function handleClearLogs() {
     setLines([]);
+    setShowClearModal(false);
   }
 
-  async function handleLoadTestLogs() {
-    try {
-      const res = await fetch(`/pm2/master/api/logs/test/${name}`, {
-        credentials: 'include',
-      });
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-      }
-      
-      const text = await res.text();
-      
-      // Check if response is empty or only whitespace
-      if (!text || !text.trim()) {
-        console.warn('Empty response from test logs endpoint');
-        setLines([]);
-        setError(null);
-        setLoading(false);
-        return;
-      }
-      
-      // Try to parse JSON
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch (parseErr) {
-        console.error('Failed to parse test logs response:', text);
-        throw new Error('Invalid JSON response from server');
-      }
-      
-      // Process test logs
-      const testLines = [];
-      
-      // Add output logs
-      if (data.outLogs && data.outLogs.length > 0) {
-        data.outLogs.forEach(line => {
-          testLines.push({
-            text: line,
-            stream: 'out',
-            time: new Date().toLocaleTimeString(),
-          });
-        });
-      }
-      
-      // Add error logs
-      if (data.errLogs && data.errLogs.length > 0) {
-        data.errLogs.forEach(line => {
-          testLines.push({
-            text: line,
-            stream: 'err',
-            time: new Date().toLocaleTimeString(),
-          });
-        });
-      }
-      
-      setLines(testLines);
-      setError(null);
-      setLoading(false);
-    } catch (err) {
-      console.error('Error loading test logs:', err);
-      setError(err.message);
-      setLoading(false);
-    }
+  function handleDownloadLogs() {
+    // Format logs as text
+    const logText = lines.map(line => {
+      const streamIndicator = line.stream === 'err' ? '[ERROR]' : '[OUT]';
+      return `${line.time} ${streamIndicator} ${line.text}`;
+    }).join('\n');
+
+    // Create blob and download
+    const blob = new Blob([logText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${name}_logs.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   if (error) {
@@ -224,13 +181,13 @@ export default function Logs() {
           <h1 className="text-xl font-bold">{name} — {t('logs')}</h1>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={handleLoadTestLogs}
+          <button onClick={handleDownloadLogs}
             className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border transition-colors hover:bg-white/5"
             style={{ borderColor: 'var(--border)', color: 'var(--accent)' }}
-            title="Load test logs">
-            🧪 Test Logs
+            title={t('download_logs')}>
+            <Download size={13} /> {t('download_logs')}
           </button>
-          <button onClick={handleClearLogs}
+          <button onClick={() => setShowClearModal(true)}
             className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border transition-colors hover:bg-white/5"
             style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}
             title={t('clear_logs')}>
@@ -257,6 +214,34 @@ export default function Logs() {
         )}
         <div ref={bottomRef} />
       </div>
+
+      {/* Clear Logs Modal */}
+      {showClearModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: 'rgba(0,0,0,0.6)' }}>
+          <div className="w-full max-w-md rounded-2xl border p-6 shadow-2xl"
+            style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="font-semibold">{t('confirm_clear_logs')}</h3>
+            </div>
+            <p className="text-sm mb-5" style={{ color: 'var(--muted)' }}>
+              {t('confirm_clear_logs_desc')}
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setShowClearModal(false)}
+                className="flex-1 py-2 rounded-lg text-sm border transition-colors hover:bg-white/5"
+                style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>
+                {t('cancel')}
+              </button>
+              <button onClick={handleClearLogs}
+                className="flex-1 py-2 rounded-lg text-sm font-medium transition-colors"
+                style={{ background: 'var(--danger)', color: '#fff' }}>
+                {t('clear_logs')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -4,6 +4,26 @@ import { useApp } from '../context/AppContext';
 import { FolderGit2, Plus, RefreshCw, Trash2, Rocket } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+function Modal({ title, onClose, children }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.6)' }}>
+      <div className="w-full max-w-md rounded-2xl border p-6 shadow-2xl"
+        style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="font-semibold">{title}</h3>
+          <button onClick={onClose}
+            className="p-1.5 rounded-md hover:bg-white/5 transition-colors"
+            style={{ color: 'var(--muted)' }}>
+            ✕
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function Projects() {
   const { t } = useApp();
   const navigate = useNavigate();
@@ -15,6 +35,8 @@ export default function Projects() {
   const [cloning, setCloning] = useState(false);
   const [cloneError, setCloneError] = useState('');
   const [deployLog, setDeployLog] = useState({});
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [repoToDelete, setRepoToDelete] = useState(null);
 
   async function fetchRepos() {
     try {
@@ -77,9 +99,15 @@ export default function Projects() {
   }
 
   async function handleDelete(name) {
-    if (!window.confirm(t('confirm_delete'))) return;
+    setRepoToDelete(name);
+    setShowDeleteModal(true);
+  }
+
+  async function confirmDeleteRepo() {
     try {
-      await axios.delete(`/pm2/master/api/repos/${name}`, { withCredentials: true });
+      await axios.delete(`/pm2/master/api/repos/${repoToDelete}`, { withCredentials: true });
+      setShowDeleteModal(false);
+      setRepoToDelete(null);
       fetchRepos();
     } catch (err) {
       console.error(err);
@@ -198,6 +226,33 @@ export default function Projects() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Delete Repo Modal */}
+      {showDeleteModal && (
+        <Modal title={t('confirm_delete')} onClose={() => setShowDeleteModal(false)}>
+          <div className="flex flex-col gap-4">
+            <p className="text-sm" style={{ color: 'var(--muted)' }}>
+              {t('confirm_delete')}
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 py-2 rounded-lg text-sm border transition-colors hover:bg-white/5"
+                style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}
+              >
+                {t('cancel')}
+              </button>
+              <button
+                onClick={confirmDeleteRepo}
+                className="flex-1 py-2 rounded-lg text-sm font-medium transition-colors"
+                style={{ background: 'var(--danger)', color: '#fff' }}
+              >
+                {t('delete')}
+              </button>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   );
