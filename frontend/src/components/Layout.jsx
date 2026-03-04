@@ -1,9 +1,58 @@
-import { Outlet, NavLink } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { LayoutDashboard, FolderGit2, Settings, Moon, Sun, Github } from 'lucide-react';
 
 export default function Layout() {
   const { t, theme, setTheme, lang, setLang, meta } = useApp();
+  const navigate = useNavigate();
+  const [authenticated, setAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const res = await fetch('/pm2/master/auth/status', { credentials: 'include' });
+        const data = await res.json();
+        
+        // If password is required, user must be authenticated
+        if (data.passwordRequired) {
+          // Check if user has valid token
+          const checkRes = await fetch('/pm2/master/api/settings', { credentials: 'include' });
+          setAuthenticated(checkRes.ok);
+        } else {
+          // No password required, user is authenticated
+          setAuthenticated(true);
+        }
+      } catch (err) {
+        console.error('Auth check failed:', err);
+        setAuthenticated(false);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    checkAuth();
+  }, [navigate]);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!loading && !authenticated) {
+      navigate('/login');
+    }
+  }, [loading, authenticated, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+        <div style={{ color: 'var(--muted)' }}>{t('loading')}</div>
+      </div>
+    );
+  }
+
+  if (!authenticated) {
+    return null; // Will redirect
+  }
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg)', color: 'var(--fg)' }}>

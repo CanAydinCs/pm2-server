@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useApp } from '../context/AppContext';
-import { RefreshCw, Copy, Check, ExternalLink, Key, Trash2 } from 'lucide-react';
+import { RefreshCw, Copy, Check, ExternalLink, Key, Trash2, LogOut } from 'lucide-react';
 
 function Modal({ title, onClose, children }) {
   return (
@@ -25,6 +26,7 @@ function Modal({ title, onClose, children }) {
 
 export default function Settings() {
   const { t, theme, setTheme, lang, setLang } = useApp();
+  const navigate = useNavigate();
   const [config, setConfig] = useState(null);
   const [saving, setSaving] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '' });
@@ -145,6 +147,15 @@ export default function Settings() {
       setDeleteFromSystem(false);
     } catch (err) {
       alert(err.response?.data?.error || 'SSH key silinemedi');
+    }
+  }
+
+  async function handleLogout() {
+    try {
+      await axios.post('/pm2/master/auth/logout', {}, { withCredentials: true });
+      navigate('/login');
+    } catch (err) {
+      console.error('Logout failed:', err);
     }
   }
 
@@ -306,6 +317,19 @@ export default function Settings() {
             </button>
           </div>
         </form>
+      </section>
+
+      {/* Logout */}
+      <section className="rounded-xl border p-5"
+        style={{ background: 'var(--card)', borderColor: 'var(--border)' }}>
+        <h2 className="font-semibold mb-4 text-sm">{t('logout')}</h2>
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm border transition-colors hover:bg-white/5"
+          style={{ borderColor: 'var(--border)', color: 'var(--danger)' }}
+        >
+          <LogOut size={14} /> {t('logout')}
+        </button>
       </section>
 
       {/* Public Key Modal */}
