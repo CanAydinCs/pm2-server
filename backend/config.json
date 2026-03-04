@@ -1,0 +1,26 @@
+{
+  "port": 1881,
+  "basePath": "/pm2/master",
+  "repoDir": "/var/www",
+  "passwordHash": null,
+  "defaultTheme": "dark",
+  "defaultLang": "tr",
+  "sshStatus": {
+    "connected": true,
+    "username": "CanAydinCs",
+    "lastChecked": "2026-03-04T10:42:18.842Z"
+  },
+  "meta": {
+    "githubUrl": "https://github.com/***github-kullanici***",
+    "footerText": "***Ad Soyad***"
+  },
+  "sshAccounts": [
+    {
+      "label": "windows makina",
+      "keyName": "t",
+      "hostAlias": "github.com-t",
+      "keyPath": "C:/Users/Can/.ssh/t",
+      "publicKey": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE0HatGRwBIOq+a7zzc0+ZdrMvSflvjF1QG+3LdhU1GO windows makina"
+    }
+  ]
+}
