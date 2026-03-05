@@ -53,7 +53,6 @@ export default function Logs() {
             initialLines.push({
               text: line,
               stream: 'out',
-              time: new Date().toLocaleTimeString(),
             });
           });
         }
@@ -64,7 +63,6 @@ export default function Logs() {
             initialLines.push({
               text: line,
               stream: 'err',
-              time: new Date().toLocaleTimeString(),
             });
           });
         }
@@ -100,7 +98,6 @@ export default function Logs() {
           setLines((prev) => [...prev.slice(-500), {
             text: msg.data,
             stream: msg.stream,
-            time: new Date().toLocaleTimeString(),
           }]);
         }
       } catch (parseErr) {
@@ -136,11 +133,8 @@ export default function Logs() {
   }
 
   function handleDownloadLogs() {
-    // Format logs as text
-    const logText = lines.map(line => {
-      const streamIndicator = line.stream === 'err' ? '[ERROR]' : '[OUT]';
-      return `${line.time} ${streamIndicator} ${line.text}`;
-    }).join('\n');
+    // Format logs as text (logs already contain timestamps from PM2)
+    const logText = lines.map(line => line.text).join('\n');
 
     // Create blob and download
     const blob = new Blob([logText], { type: 'text/plain' });
@@ -204,11 +198,8 @@ export default function Logs() {
           <div style={{ color: 'var(--muted)' }}>{t('logs_empty')}</div>
         ) : (
           lines.map((line, i) => (
-            <div key={i} className="flex gap-3">
-              <span style={{ color: 'var(--muted)', minWidth: '70px' }}>{line.time}</span>
-              <span style={{ color: line.stream === 'err' ? 'var(--danger)' : 'var(--fg)' }}>
-                {line.text}
-              </span>
+            <div key={i} style={{ color: line.stream === 'err' ? 'var(--danger)' : 'var(--fg)' }}>
+              {line.text}
             </div>
           ))
         )}
