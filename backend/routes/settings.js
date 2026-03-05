@@ -132,94 +132,66 @@ router.patch('/meta', (req, res) => {
   res.json(updated.meta);
 });
 
-// Self-update: git pull ve PM2 restart
+// Self-update: Spawns update.js script to run independently
 router.post('/self-update', async (req, res) => {
+  const updateScript = path.join(process.cwd(), 'update.js');
+  
   try {
     // Send initial message
     broadcast('self-update', { message: 'Starting update process...' });
     
-    // Get project root (directory with .git folder)
-    const projectRoot = process.cwd();
-    broadcast('self-update', { message: `Project root: ${projectRoot}` });
-    
-    // Check if .git exists
-    if (!fs.existsSync(path.join(projectRoot, '.git'))) {
-      broadcast('self-update', { message: 'Error: Not a git repository', error: true });
-      return res.status(400).json({ error: 'Not a git repository' });
+    // Check if update.js exists
+    if (!fs.existsSync(updateScript)) {
+      broadcast('self-update', { message: 'Error: update.js not found', error: true });
+      return res.status(500).json({ error: 'Update script not found' });
     }
     
-    // Run git pull
-    broadcast('self-update', { message: 'Running git pull...' });
+    // Spawn update script as child process
+    broadcast('self-update', { message: 'Running update script...' });
     
-    try {
-      await pullRepo(projectRoot);
-      broadcast('self-update', { message: 'Git pull completed successfully' });
-    } catch (gitErr) {
-      broadcast('self-update', { message: `Git pull failed: ${gitErr.message}`, error: true });
-      return res.status(500).json({ error: `Git pull failed: ${gitErr.message}` });
-    }
+    const updateProcess = spawn('node', [updateScript], {
+      cwd: process.cwd(),
+      env: process.env
+    });
     
-    // Run npm install in frontend
-    broadcast('self-update', { message: 'Running npm install in frontend...' });
-    
-    try {
-      await new Promise((resolve, reject) => {
-        exec('npm install', { cwd: path.join(projectRoot, 'frontend') }, (err, stdout, stderr) => {
-          if (err) {
-            broadcast('self-update', { message: `npm install failed: ${stderr || err.message}`, error: true });
-            reject(err);
-          } else {
-            broadcast('self-update', { message: 'npm install completed successfully' });
-            resolve();
-          }
-        });
+    // Stream stdout to WebSocket
+    updateProcess.stdout.on('data', (data) => {
+      const lines = data.toString().split('\n').filter(line => line.trim());
+      lines.forEach(line => {
+        broadcast('self-update', { message: line });
       });
-    } catch (npmInstallErr) {
-      return res.status(500).json({ error: `npm install failed: ${npmInstallErr.message}` });
-    }
+    });
     
-    // Run npm run build in frontend
-    broadcast('self-update', { message: 'Running npm run build in frontend...' });
-    
-    try {
-      await new Promise((resolve, reject) => {
-        exec('npm run build', { cwd: path.join(projectRoot, 'frontend') }, (err, stdout, stderr) => {
-          if (err) {
-            broadcast('self-update', { message: `npm run build failed: ${stderr || err.message}`, error: true });
-            reject(err);
-          } else {
-            broadcast('self-update', { message: 'npm run build completed successfully' });
-            resolve();
-          }
-        });
+    // Stream stderr to WebSocket
+    updateProcess.stderr.on('data', (data) => {
+      const lines = data.toString().split('\n').filter(line => line.trim());
+      lines.forEach(line => {
+        broadcast('self-update', { message: line, error: true });
       });
-    } catch (buildErr) {
-      return res.status(500).json({ error: `npm run build failed: ${buildErr.message}` });
-    }
+    });
     
-    // Restart PM2 process
-    broadcast('self-update', { message: 'Restarting PM2 process...' });
+    // Handle process exit
+    updateProcess.on('close', (code) => {
+      if (code === 0) {
+        broadcast('self-update', { message: 'Update completed successfully. Restarting...' });
+      } else {
+        broadcast('self-update', { message: `Update failed with exit code ${code}`, error: true });
+      }
+    });
     
-    try {
-      await pm2Utils.connect();
-      await pm2Utils.restart('pm2-panel');
-      broadcast('self-update', { message: 'PM2 restart initiated. Server will restart momentarily.' });
-      
-      // Send success response before restart happens
-      res.json({ success: true, message: 'Update complete. Server restarting...' });
-      
-      // Give some time for response to be sent before restart
-      setTimeout(() => {
-        pm2Utils.raw().disconnect();
-      }, 2000);
-      
-    } catch (pm2Err) {
-      broadcast('self-update', { message: `PM2 restart failed: ${pm2Err.message}`, error: true });
-      res.status(500).json({ error: `PM2 restart failed: ${pm2Err.message}` });
-    }
+    // Handle process error
+    updateProcess.on('error', (err) => {
+      broadcast('self-update', { message: `Failed to start update script: ${err.message}`, error: true });
+    });
+    
+    // Return immediately (fire-and-forget)
+    res.json({ 
+      success: true, 
+      message: 'Update started. Check logs for progress. Server will restart automatically.' 
+    });
     
   } catch (err) {
-    broadcast('self-update', { message: `Update failed: ${err.message}`, error: true });
+    broadcast('self-update', { message: `Failed to start update: ${err.message}`, error: true });
     res.status(500).json({ error: err.message });
   }
 });
