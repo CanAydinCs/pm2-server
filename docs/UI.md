@@ -36,8 +36,7 @@ The main navigation is accessible from the header and includes:
 
 The login page is the entry point to the dashboard.
 
-<!-- TODO: Add screenshot showing login page with password field and login button -->
-<!-- ![Login Page](docs/images/login-page.png) -->
+![Login Page](../docs/images/login-page.png)
 
 ### Password Behavior
 
@@ -81,8 +80,7 @@ The Dashboard displays live statistics for each process:
 
 Each process is displayed in a card with the following elements:
 
-<!-- TODO: Add screenshot showing a process card with all controls -->
-<!-- ![Process Card Detail](docs/images/process-card-detail.png) -->
+![Process Card Detail](../docs/images/process-card-detail.png)
 
 **Process Name**: Displayed at the top of the card
 
@@ -99,11 +97,11 @@ Each process is displayed in a card with the following elements:
 
 **Control Buttons**:
 
-1. **Start** (▶️): Start a stopped process
-2. **Stop** (⏸️): Stop a running process
-3. **Restart** (🔄): Restart the process
-4. **Reload** (↻): Gracefully reload (zero-downtime restart)
-5. **Delete** (🗑️): Remove process from PM2
+1. **Start** : Start a stopped process
+2. **Stop** : Stop a running process
+3. **Restart** : Restart the process
+4. **Reload** : Gracefully reload (zero-downtime restart)
+5. **Delete** : Remove process from PM2
 
 ### Refresh Rate
 
@@ -121,21 +119,21 @@ When no processes are running, the Dashboard displays a message indicating that 
 
 1. Navigate to Dashboard
 2. Find the stopped process card
-3. Click the **Start** (▶️) button
+3. Click the **Start**  button
 4. Process will start and status will change to "online"
 
 ### Stopping a Process
 
 1. Navigate to Dashboard
 2. Find the running process card
-3. Click the **Stop** (⏸️) button
+3. Click the **Stop** button
 4. Process will stop and status will change to "stopped"
 
 ### Restarting a Process
 
 1. Navigate to Dashboard
 2. Find the process card
-3. Click the **Restart** (🔄) button
+3. Click the **Restart** button
 4. Process will restart immediately
 5. Status will temporarily change then return to "online"
 
@@ -143,7 +141,7 @@ When no processes are running, the Dashboard displays a message indicating that 
 
 1. Navigate to Dashboard
 2. Find the process card
-3. Click the **Reload** (↻) button
+3. Click the **Reload**  button
 4. Process reloads gracefully with zero downtime
 5. Best for production environments to avoid service interruption
 
@@ -151,7 +149,7 @@ When no processes are running, the Dashboard displays a message indicating that 
 
 1. Navigate to Dashboard
 2. Find the process card
-3. Click the **Delete** (🗑️) button
+3. Click the **Delete**  button
 4. Confirm the deletion (if prompted)
 5. Process is removed from PM2 and no longer appears on Dashboard
 
@@ -196,8 +194,7 @@ Example:
 
 ### Project List
 
-<!-- TODO: Add screenshot showing the projects list with multiple projects -->
-<!-- ![Projects List](docs/images/projects-list.png) -->
+![Projects List](../docs/images/projects-list.png)
 
 Each project in the list shows:
 
@@ -277,8 +274,7 @@ The Settings page allows you to configure the dashboard, manage SSH keys, and co
 6. Paste the key and click "Add SSH key"
 7. Return to dashboard and click **Test Connection**
 
-<!-- TODO: Add screenshot showing SSH key generation modal -->
-<!-- ![SSH Key Modal](docs/images/ssh-key-modal.png) -->
+![SSH Key Modal](../docs/images/ssh-key-modal.png) 
 
 #### Viewing the Public Key
 
@@ -303,8 +299,8 @@ The Settings page allows you to configure the dashboard, manage SSH keys, and co
 ✗ Connection failed: Permission denied
 ```
 
-<!-- TODO: Add screenshot showing SSH connection test result -->
-<!-- ![SSH Test Result](docs/images/ssh-test-result.png) -->
+![SSH Test Result](../docs/images/ssh-test-result.png)
+![SSH Test Result](../docs/images/ssh-test-result-2.png)
 
 #### Deleting an SSH Key
 
@@ -342,11 +338,9 @@ Switch between dark and light themes.
    - Light
 3. Theme applies immediately and persists across sessions
 
-<!-- TODO: Add screenshot showing light theme -->
-<!-- ![Light Theme](docs/images/light-theme.png) -->
+![Light Theme](../docs/images/light-theme.png) 
 
-<!-- TODO: Add screenshot showing dark theme -->
-<!-- ![Dark Theme](docs/images/dark-theme.png) -->
+![Dark Theme](../docs/images/dark-theme.png) 
 
 #### Language
 
@@ -387,8 +381,7 @@ Choose between English and Turkish.
 
 The Self-Update feature allows you to update the dashboard to the latest version from Git.
 
-<!-- TODO: Add screenshot showing self-update section with logs -->
-<!-- ![Self-Update](docs/images/self-update.png) -->
+![Self-Update](../docs/images/self-update.png) 
 
 **Update Process**:
 
@@ -477,8 +470,7 @@ On mobile devices (screen width < 768px):
 - Tap outside the sidebar or click the X to close it
 - All navigation links and settings are accessible from the sidebar
 
-<!-- TODO: Add screenshot showing mobile menu open -->
-<!-- ![Mobile Menu](docs/images/mobile-menu.png) -->
+![Mobile Menu](../docs/images/mobile-menu.png) 
 
 ### Mobile Features
 
@@ -577,9 +569,6 @@ Notifications appear for:
 - Color-coded by type (success/error/warning)
 - Stackable for multiple notifications
 
-<!-- TODO: Add screenshot showing toast notifications -->
-<!-- ![Toast Notifications](docs/images/toast-notifications.png) -->
-
 ### Loading States
 
 Loading indicators appear during:
@@ -604,42 +593,8 @@ The dashboard follows accessibility best practices:
 - ARIA labels for screen readers
 - High contrast ratios
 - Focus indicators
-- Alt text for images
 
 ---
-
-## Browser Support
-
-The dashboard supports modern browsers:
-
-- **Chrome/Edge**: Latest 2 versions
-- **Firefox**: Latest 2 versions
-- **Safari**: Latest 2 versions
-- **Mobile Browsers**: iOS Safari, Chrome Mobile
-
-**Note**: Internet Explorer is not supported.
-
----
-
-## Performance
-
-The dashboard is optimized for:
-
-- Fast page loads
-- Efficient WebSocket usage
-- Minimal re-renders
-- Cached responses
-- Lazy loading for images
-
----
-
-## Tips & Tricks
-
-### Quick Actions
-
-- **Keyboard Navigation**: Use Tab to navigate between fields
-- **Refresh**: Press F5 to manually refresh process data
-- **Mobile Menu**: Tap the hamburger icon on mobile devices
 
 ### Efficient Workflow
 
