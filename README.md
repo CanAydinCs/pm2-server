@@ -86,7 +86,6 @@ module.exports = {
 - **GitHub Integration**: Clone and deploy repositories via SSH
 - **Real-time Monitoring**: View CPU, memory, uptime, and restart count for each process
 - **SSH Key Management**: Generate and manage SSH keys for GitHub authentication
-- **Self-Update**: One-click update from Git with automatic build and restart
 - **Multi-language Support**: English and Turkish (Türkçe) language options
 - **Dark/Light Theme**: Customizable theme for comfortable viewing
 - **Responsive Design**: Works on desktop and mobile devices

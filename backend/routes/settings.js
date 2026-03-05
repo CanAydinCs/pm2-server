@@ -1,14 +1,10 @@
 const router = require('express').Router();
 const { getConfig, setConfig } = require('../utils/config');
 const { checkSSH, getPublicKey, hasSSHKey, deleteSSHKey } = require('../utils/ssh');
-const { execSync, spawn } = require('child_process');
-const { pullRepo } = require('../utils/git');
-const pm2Utils = require('../utils/pm2');
-const { broadcast } = require('../utils/ws');
+const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { exec } = require('child_process');
 
 const isWindows = process.platform === 'win32';
 
@@ -129,71 +125,7 @@ router.patch('/meta', (req, res) => {
   const config = getConfig();
   const updatedMeta = { ...config.meta, ...req.body };
   const updated = setConfig({ meta: updatedMeta });
-  res.json(updated.meta);
-});
-
-// Self-update: Spawns update.js script to run independently
-router.post('/self-update', async (req, res) => {
-  const updateScript = path.join(process.cwd(), 'update.js');
-  
-  try {
-    // Send initial message
-    broadcast('self-update', { message: 'Starting update process...' });
-    
-    // Check if update.js exists
-    if (!fs.existsSync(updateScript)) {
-      broadcast('self-update', { message: 'Error: update.js not found', error: true });
-      return res.status(500).json({ error: 'Update script not found' });
-    }
-    
-    // Spawn update script as child process
-    broadcast('self-update', { message: 'Running update script...' });
-    
-    const updateProcess = spawn('node', [updateScript], {
-      cwd: process.cwd(),
-      env: process.env
-    });
-    
-    // Stream stdout to WebSocket
-    updateProcess.stdout.on('data', (data) => {
-      const lines = data.toString().split('\n').filter(line => line.trim());
-      lines.forEach(line => {
-        broadcast('self-update', { message: line });
-      });
-    });
-    
-    // Stream stderr to WebSocket
-    updateProcess.stderr.on('data', (data) => {
-      const lines = data.toString().split('\n').filter(line => line.trim());
-      lines.forEach(line => {
-        broadcast('self-update', { message: line, error: true });
-      });
-    });
-    
-    // Handle process exit
-    updateProcess.on('close', (code) => {
-      if (code === 0) {
-        broadcast('self-update', { message: 'Update completed successfully. Restarting...' });
-      } else {
-        broadcast('self-update', { message: `Update failed with exit code ${code}`, error: true });
-      }
-    });
-    
-    // Handle process error
-    updateProcess.on('error', (err) => {
-      broadcast('self-update', { message: `Failed to start update script: ${err.message}`, error: true });
-    });
-    
-    // Return immediately (fire-and-forget)
-    res.json({ 
-      success: true, 
-      message: 'Update started. Check logs for progress. Server will restart automatically.' 
-    });
-    
-  } catch (err) {
-    broadcast('self-update', { message: `Failed to start update: ${err.message}`, error: true });
-    res.status(500).json({ error: err.message });
-  }
+  res.json(updatedMeta);
 });
 
 module.exports = router;

@@ -377,12 +377,6 @@ Choose between English and Turkish.
 
 **Note**: After removing the password, the login screen will still appear, but any password will work for login.
 
-### Self-Update
-
-The Self-Update feature allows you to update the dashboard to the latest version from Git.
-
-![Self-Update](../docs/images/self-update.png) 
-
 **Update Process**:
 
 1. Navigate to **Settings** → **Update Server** section
