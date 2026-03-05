@@ -2,6 +2,7 @@ module.exports = {
   apps: [{
     name: 'pm2-panel',
     script: './backend/index.js',
+    time: true,
     cwd: './',
     instances: 1,
     exec_mode: 'fork',

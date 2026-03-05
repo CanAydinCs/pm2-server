@@ -60,6 +60,26 @@ pm2 save
 pm2-startup install
 ```
 
+### **Important**: Timestamps on logs
+
+In order to see timestamps on pm2 logs, you need to activate it in ecosystem file. Otherwise, pm2 doesn't show timestamp as default.
+
+Example:
+```powershell
+module.exports = {
+  apps: [
+    {
+      name: "my-app",
+      script: "./index.js",
+      time: true, # timestamp is activated 
+      # if you want special format of your own:
+      # log_date_format: "YYYY-MM-DD HH:mm:ss Z"
+    },
+  ],
+};
+
+```
+
 ## Features
 
 - **Process Management**: Start, stop, restart, reload, and delete PM2 processes
